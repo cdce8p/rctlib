@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request: ~
+
+env:
+  CACHE_VERSION: 1
+
+jobs:
+  pytest-linux:
+    name: Run tests Python ${{ matrix.python-version }} (Linux)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.13", "3.14"]
+    outputs:
+      python-key: ${{ steps.generate-python-key.outputs.key }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v5.0.0
+      - name: Set up Python ${{ matrix.python-version }}
+        id: python
+        uses: actions/setup-python@v6.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+          check-latest: true
+      - name: Generate partial Python venv restore key
+        id: generate-python-key
+        run: >-
+          echo "key=venv-${{ env.CACHE_VERSION }}-${{
+            hashFiles('requirements.txt', 'requirements_test.txt') }}" >> $GITHUB_OUTPUT
+      - name: Restore Python virtual environment
+        id: cache-venv
+        uses: actions/cache@v4.3.0
+        with:
+          path: venv
+          key: >-
+            ${{ runner.os }}-${{ runner.arch }}-${{
+            steps.python.outputs.python-version }}-${{
+            steps.generate-python-key.outputs.key }}
+      - name: Create Python virtual environment
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          python -m venv venv
+          . venv/bin/activate
+          python -m pip install -U pip
+          pip install -U -r requirements.txt -r requirements_test.txt
+          pip install .
+      - name: Run pytest
+        run: |
+          . venv/bin/activate
+          pytest tests/

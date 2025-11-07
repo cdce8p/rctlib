@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools~=80.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rctlib"
+version = "0.1"
+license = "MIT"
+description = "Send and receive messages from RCT Power inverters"
+readme      = "README.md"
+authors = [{ name = "Marc Mueller" }]
+keywords    = []
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Home Automation",
+]
+requires-python = ">=3.13"
+dependencies = [
+  "colorlog>=6.10.1",
+]
+
+[project.urls]
+"Source Code" = "https://github.com/cdce8p/rctlib"
+
+[project.scripts]
+rct-proxy = "rctlib.proxy.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["rctlib*"]
